@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit as cf
 
-""""This is version 1.0 of the curve fitting script
+""""This is version 1.7 of the curve fitting script
  for the RadChem lab. It includes a base class for
 handling data processing, plotting, and residual
 analysis, as well as specific classes for
@@ -10,6 +10,7 @@ exponential and linear fitting. The script
 also incorporates error handling and confidence
 interval calculations to provide a comprehensive
 analysis of the fit quality."""
+# Added NDF to compare everyone's data. 
 
 class BaseFitter:
     """Parent class to handle plotting and residual calculations."""
@@ -118,7 +119,7 @@ class BaseFitter:
             # Diagnostic: Reduced Chi-Squared
             red_chi = self.calculate_reduced_chi_sq()
             eq_text = self.get_equation_string()
-            # Place the Chi-Squared in a text box instead of the title
+            
             stats_text = f"{eq_text}\n$\chi_\\nu^2 = {red_chi:.3f}$"
             plt.gca().text(
                 0.80,
@@ -131,15 +132,15 @@ class BaseFitter:
                            facecolor='white',
                            alpha=0.5))
 
-        # Title Logic: Use provided title or default to "Curve Fit"
+        
         plt.title(title if title else "Curve Fit", fontsize=14, fontweight='bold')
 
         plt.xlabel(self.xaxis_label)
         plt.ylabel(self.yaxis_label)
         plt.legend()
         plt.grid(True, linestyle='--', alpha=0.7)
-        # Note: I left out plt.show() as per your previous instruction
 
+ # Sanity check
     def plot_residuals(self):
         residuals = self.calculate_residuals()
         if residuals is None: return
@@ -193,7 +194,7 @@ class LinearFitter(BaseFitter):
     def get_equation_string(self):
         m, c = self.popt
         return f"$y = {m:.4f}x + {c:.2f}$"
-    
+# Check to see how far from the mean    
 def z_score(value, mean, std):
     return (value - mean) / std
 
@@ -217,7 +218,8 @@ class PopulationAnalyzer:
     exponential = np.exp(-0.5*((x-self.mean)/ self.std)**2)
     y = coefficient * exponential
     return x, y
-
+# Pool everyone's data
+# Takes an array
   def plot_ndf(self):
     """Plots the normal distribution function"""
     x, y = self.ndf()
@@ -233,7 +235,7 @@ class PopulationAnalyzer:
     x_curve, y_curve = self.ndf()
     plt.fill_between(x_curve, y_curve, where=(x_curve >= self.mean - self.std) & (x_curve <= self.mean + self.std),
                  color='purple', alpha=0.4, label='1-Sigma Range (68%)')
-    # Make the annotation position dynamic
+    
     plt.annotate('Our Group', xy=(self.group, group_y), xytext=(self.group, group_y+1),
              arrowprops=dict(facecolor='black', shrink=0.05),
              horizontalalignment='center')
@@ -249,4 +251,5 @@ class PopulationAnalyzer:
 
     plt.legend()
     plt.grid(alpha=0.2)
+
     plt.show()
