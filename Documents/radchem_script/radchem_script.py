@@ -42,13 +42,11 @@ class BaseFitter:
         
         # 3. Handle Transformation and Weights
         if linear_log:
-            y_safe = np.maximum(y_proc, 1.0) 
-            y_final = np.log(y_safe)
-            sigma = 1.0 / np.sqrt(y_safe) # Correct log weighting
+            y_final = np.log(y_proc)
+            sigma = y_proc / (self.y + np.mean(self.background_subtract)) # Correct log weighting
         else:
             y_final = y_proc
-            sigma = np.sqrt(np.maximum(y_proc, 1.0)) # Raw Poisson weighting
-        
+            sigma = np.sqrt(self.y + np.mean(self.background_subtract)) # Raw Poisson weighting
         return y_final, sigma
 
     def calculate_confidence_interval(self, x_range, n_sigma=1.96):
@@ -253,3 +251,4 @@ class PopulationAnalyzer:
     plt.grid(alpha=0.2)
 
     plt.show()
+
