@@ -43,7 +43,7 @@ class BaseFitter:
         # 3. Handle Transformation and Weights
         if linear_log:
             y_final = np.log(y_proc)
-            sigma = (self.y + np.mean(self.background_subtract)) / y_proc # Correct log weighting
+            sigma = np.sqrt(self.y + np.mean(self.background_subtract)) / y_proc # Correct log weighting
         else:
             y_final = y_proc
             sigma = np.sqrt(self.y + np.mean(self.background_subtract)) # Raw Poisson weighting
@@ -251,5 +251,6 @@ class PopulationAnalyzer:
     plt.grid(alpha=0.2)
 
     plt.show()
+
 
 
