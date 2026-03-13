@@ -162,8 +162,9 @@ class BaseFitter:
         plt.show()
 
 class ExponentialFitter(BaseFitter):
-    def __init__(self, x, y, xaxis_label='Time', yaxis_label='Counts', guess=(1, -0.1), background_subtract=None, dead_time=0):
-        super().__init__(x, y, xaxis_label, yaxis_label, background_subtract, dead_time)
+    def __init__(self, x, y, xaxis_label='Time', yaxis_label='Counts', guess=(1, -0.1), background_subtract=None, dead_time=0, is_rate = False,
+                t_gross = 1.0, t_bg = 5.0):
+        super().__init__(x, y, xaxis_label, yaxis_label, background_subtract, dead_time, is_rate, t_gross, t_bg)
         self.guess = guess
         
         y_proc, sigma = self._process_data(linear_log=False)
@@ -260,6 +261,7 @@ class PopulationAnalyzer:
     plt.grid(alpha=0.2)
 
     plt.show()
+
 
 
 
