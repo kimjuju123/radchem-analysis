@@ -37,17 +37,19 @@ class BaseFitter:
         # 1. Background (Must be first, on raw counts)
         if self.background_subtract is not None:
             y_proc = y_proc - np.mean(self.background_subtract)
-
+        if self.is_rate:
+            y_proc = (self.y / self.t_gross)-(np.mean(self.background_subtract) / self.t_bg)
+            sigma_raw = np.sqrt(self.y / self.t_gross**2 + np.mean(self.background_subtract)/self.t_bg**2)
+        else:
+            y_proc = self.y - np.mean(self.background_subtract)
+            sigma_raw = np.sqrt(self.y + np.mean(self.background_subtract))
         # 2. Dead-time
         if self.dead_time > 0:
             mask = y_proc > 5000
             y_proc[mask] = y_proc[mask] / (1 - y_proc[mask] * self.dead_time)
         
         # 3. Handle Transformation and Weights
-        if self.is_rate:
-            sigma_raw = np.sqrt(self.y / self.t_gross + np.mean(self.background_subtract)/self.t_bg)
-        else:
-            sigma_raw = np.sqrt(self.y + np.mean(self.background_subtract))
+
         if linear_log:
             epsilon = 1e-9
             y_proc1 = np.maximum(y_proc, epsilon)
@@ -261,6 +263,7 @@ class PopulationAnalyzer:
     plt.grid(alpha=0.2)
 
     plt.show()
+
 
 
 
