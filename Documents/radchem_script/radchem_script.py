@@ -184,7 +184,7 @@ class ExponentialFitter(BaseFitter):
     def model(x, a, b):
         return a * np.exp(b * x)
 
-class LinearFitter(BaseFitter):
+class LinearLogFitter(BaseFitter):
     def __init__(self, x, y, xaxis_label='x', yaxis_label='y',guess=(1,-0.1), background_subtract=None,dead_time=0, is_rate = False, t_gross = 1.0,
                 t_bg = 5.0):
         super().__init__(x, y, xaxis_label, yaxis_label, background_subtract, dead_time, is_rate, t_gross, t_bg)
@@ -264,6 +264,7 @@ class PopulationAnalyzer:
     plt.grid(alpha=0.2)
 
     plt.show()
+
 
 
 
