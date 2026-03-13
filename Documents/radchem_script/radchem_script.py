@@ -14,7 +14,7 @@ analysis of the fit quality."""
 
 class BaseFitter:
     """Parent class to handle plotting and residual calculations."""
-    def __init__(self, x, y, xaxis_label, yaxis_label, background_subtract=None, dead_time = 0):
+    def __init__(self, x, y, xaxis_label, yaxis_label, background_subtract=None, dead_time = 0, is_rate = False, t_gross = 1.0, t_bg = 5.0):
         self.x = np.array(x)
         self.y = np.array(y)
         self.xaxis_label = xaxis_label
@@ -22,6 +22,9 @@ class BaseFitter:
         self.background_subtract = background_subtract
         self.dead_time = dead_time
         self.use_log = False
+        self.is_rate = is_rate
+        self.t_gross = t_gross
+        self.t_bg = t_bg
         
         # Parameters to be filled by the child classes
         self.popt = None
@@ -41,12 +44,18 @@ class BaseFitter:
             y_proc[mask] = y_proc[mask] / (1 - y_proc[mask] * self.dead_time)
         
         # 3. Handle Transformation and Weights
+        if self.is_rate:
+            sigma_raw = np.sqrt(self.y / self.t_gross + np.mean(self.background_subtract)/self.t_bg)
+        else:
+            sigma_raw = np.sqrt(self.y + np.mean(self.background_subtract))
         if linear_log:
-            y_final = np.log(y_proc)
-            sigma = np.sqrt(self.y + np.mean(self.background_subtract)) / y_proc # Correct log weighting
+            epsilon = 1e-9
+            y_proc1 = np.maximum(y_proc, epsilon)
+            y_final = np.log(y_proc1)
+            sigma = sigma_raw / y_proc1 # Correct log weighting
         else:
             y_final = y_proc
-            sigma = np.sqrt(self.y + np.mean(self.background_subtract)) # Raw Poisson weighting
+            sigma = sigma_raw # Raw Poisson weighting
         return y_final, sigma
 
     def calculate_confidence_interval(self, x_range, n_sigma=1.96):
@@ -251,6 +260,7 @@ class PopulationAnalyzer:
     plt.grid(alpha=0.2)
 
     plt.show()
+
 
 
 
