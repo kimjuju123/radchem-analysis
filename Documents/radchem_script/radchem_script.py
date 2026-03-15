@@ -40,13 +40,18 @@ class BaseFitter:
             y_proc[mask] = y_proc[mask] / (1 - y_proc[mask] * self.dead_time)
         
         # 1. Background (Must be first, on raw counts)
-        if self.background_subtract is not None:
-            y_proc = y_proc - np.mean(self.background_subtract)
+        #if self.background_subtract is not None:
+         
         if self.is_rate:
-            y_proc = (y_proc / self.t_gross)-(np.mean(self.background_subtract) / self.t_bg)
-            sigma_raw = np.sqrt(y_proc / self.t_gross**2 + np.mean(self.background_subtract)/self.t_bg**2)
+            gross = y_proc / self.t_gross
+            background = np.mean(self.background_subtract) / self.t_bg
+            y_proc_net = gross - background
+            sigma_raw = np.sqrt(gross / self.t_gross + background / self.t_bg)
+            y_proc = y_proc_net
         else:
+            y_proc_net = y_proc - np.mean(self.background_subtract)
             sigma_raw = np.sqrt(y_proc + np.mean(self.background_subtract))
+            y_proc = y_proc_net
         # 3. Handle Transformation and Weights
 
         if linear_log:
