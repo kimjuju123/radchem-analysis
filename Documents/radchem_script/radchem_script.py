@@ -33,6 +33,11 @@ class BaseFitter:
 
     def _process_data(self, linear_log=False):
         y_proc = self.y.copy().astype(float)
+
+        # 2. Dead-time
+        if self.dead_time > 0:
+            mask = y_proc > 5000
+            y_proc[mask] = y_proc[mask] / (1 - y_proc[mask] * self.dead_time)
         
         # 1. Background (Must be first, on raw counts)
         if self.background_subtract is not None:
@@ -43,11 +48,6 @@ class BaseFitter:
         else:
             y_proc = self.y - np.mean(self.background_subtract)
             sigma_raw = np.sqrt(self.y + np.mean(self.background_subtract))
-        # 2. Dead-time
-        if self.dead_time > 0:
-            mask = y_proc > 5000
-            y_proc[mask] = y_proc[mask] / (1 - y_proc[mask] * self.dead_time)
-        
         # 3. Handle Transformation and Weights
 
         if linear_log:
