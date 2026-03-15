@@ -44,10 +44,9 @@ class BaseFitter:
             y_proc = y_proc - np.mean(self.background_subtract)
         if self.is_rate:
             y_proc = (y_proc / self.t_gross)-(np.mean(self.background_subtract) / self.t_bg)
-            sigma_raw = np.sqrt(self.y / self.t_gross**2 + np.mean(self.background_subtract)/self.t_bg**2)
+            sigma_raw = np.sqrt(y_proc / self.t_gross**2 + np.mean(self.background_subtract)/self.t_bg**2)
         else:
-            y_proc = self.y - np.mean(self.background_subtract)
-            sigma_raw = np.sqrt(self.y + np.mean(self.background_subtract))
+            sigma_raw = np.sqrt(y_proc + np.mean(self.background_subtract))
         # 3. Handle Transformation and Weights
 
         if linear_log:
