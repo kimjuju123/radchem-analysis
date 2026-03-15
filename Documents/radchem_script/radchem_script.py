@@ -43,7 +43,7 @@ class BaseFitter:
         if self.background_subtract is not None:
             y_proc = y_proc - np.mean(self.background_subtract)
         if self.is_rate:
-            y_proc = (self.y / self.t_gross)-(np.mean(self.background_subtract) / self.t_bg)
+            y_proc = (y_proc / self.t_gross)-(np.mean(self.background_subtract) / self.t_bg)
             sigma_raw = np.sqrt(self.y / self.t_gross**2 + np.mean(self.background_subtract)/self.t_bg**2)
         else:
             y_proc = self.y - np.mean(self.background_subtract)
