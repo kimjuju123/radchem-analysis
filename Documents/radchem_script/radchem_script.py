@@ -60,7 +60,7 @@ class BaseFitter:
             y_final = np.log(y_proc1)
             sigma = sigma_raw / y_proc1 # Correct log weighting
         else:
-            y_final = y_proc
+            y_final = np.maximum(y_proc,1e-9) # Changed this so that there is a hard floor of 0
             sigma = sigma_raw # Raw Poisson weighting
         return y_final, sigma
 
@@ -269,11 +269,55 @@ class PopulationAnalyzer:
 
     plt.show()
 
+#New code for potential dienergetic 
 
+class DualComponentFitter(BaseFitter):
+    """
+    Automated stripping for dienergetic sources (Beta + Bremsstrahlung).
+    Fits the model: y = a*exp(b*x) + c*exp(d*x)
+    """
+    def __init__(self, x, y, xaxis_label='Thickness', yaxis_label='Counts', 
+                 guess=(27000, -70, 30, -0.5), **kwargs):
+        super().__init__(x, y, xaxis_label, yaxis_label, **kwargs)
+        self.guess = guess
+        
+        y_proc, sigma = self._process_data(linear_log=False)
+        
+        try:
+            # We fit in linear space because sums of exponentials 
+            # don't simplify to a single line in log space.
+            self.popt, self.pcov = cf(self.model, self.x, y_proc, p0=self.guess, sigma=sigma)
+            self.perr = np.sqrt(np.diag(self.pcov))
+        except Exception as e:
+            print(f"Dual Fit Error: {e}")
 
+    @staticmethod
+    def model(x, a, b, c, d):
+        # Component 1 (Beta) + Component 2 (Bremsstrahlung/Tail)
+        return a * np.exp(b * x) + c * np.exp(d * x)
 
+    def get_equation_string(self):
+        a, b, c, d = self.popt
+        return f"$y = {a:.1f}e^{{{b:.2f}x}} + {c:.1f}e^{{{d:.2f}x}}$"
 
-
-
-
+    def plot_components(self):
+        """Visualizes the two separate physical processes."""
+        x_range = np.linspace(min(self.x), max(self.x), 100)
+        a, b, c, d = self.popt
+        
+        beta_component = a * np.exp(b * x_range)
+        tail_component = c * np.exp(d * x_range)
+        
+        plt.figure(figsize=(8, 5))
+        plt.errorbar(self.x, self.y, yerr=np.sqrt(self.y), fmt='ko', alpha=0.3, label='Raw Data')
+        plt.plot(x_range, beta_component, 'r--', label='Beta Component')
+        plt.plot(x_range, tail_component, 'b--', label='Bremsstrahlung Component')
+        plt.plot(x_range, self.model(x_range, *self.popt), 'g-', lw=2, label='Total Fit')
+        
+        plt.yscale('log')
+        plt.xlabel(self.xaxis_label)
+        plt.ylabel(self.yaxis_label)
+        plt.legend()
+        plt.title("Dienergetic Component Analysis")
+        plt.show()
 
